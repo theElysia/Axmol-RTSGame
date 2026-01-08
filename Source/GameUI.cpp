@@ -1,0 +1,91 @@
+#include "GameUI.h"
+#include "GameWorld.h"
+#include <unordered_map>
+#include <vector>
+
+using namespace ax;
+
+static constexpr int token_increase_interval = 10;
+
+static std::unordered_map<std::string, int> gameobject_cost = {std::pair("Knight", 5), std::pair("Wizard", 10),
+                                                               std::pair("Ghost", 20), std::pair("Skeleton", 20)};
+
+static std::vector<std::string> enermy_object = {"Slime", "Mushroom", "Ghost", "Skeleton"};
+
+static constexpr int enermy_interval      = 400;
+static constexpr int enermy_rush_interval = 1000;
+
+bool GameUI::init(GameWorld* game_world)
+{
+    if (!Node::init())
+    {
+        return false;
+    }
+
+    game_world_ = game_world;
+
+    auto btn1 = initButton("Knight_btn.png", "Knight", Vec2(0, 220));
+    auto btn2 = initButton("Wizard_btn.png", "Wizard", Vec2(0, 160));
+    auto btn3 = initButton("Ghost_btn.png", "Ghost", Vec2(0, 100));
+    auto btn4 = initButton("Skeleton_btn.png", "Skeleton", Vec2(0, 40));
+
+    this->addChild(btn1, 0);
+    this->addChild(btn2, 0);
+    this->addChild(btn3, 0);
+    this->addChild(btn4, 0);
+
+    token_label_ = Label::createWithSystemFont("My Label Text", "Arial", 16);
+    token_label_->setString(std::to_string(player_token_));
+    token_label_->setAnchorPoint(Vec2::ZERO);
+    token_label_->setPosition(Vec2(0, 280));
+    this->addChild(token_label_);
+
+    return true;
+}
+
+void GameUI::update(float delta)
+{
+    tick_count_++;
+    token_label_->setString(std::to_string(player_token_));
+    if (tick_count_ % token_increase_interval == 0)
+        player_token_++;
+    if (tick_count_ % enermy_interval == 0)
+    {
+        int t = ax::random<int>(0, 5) % 4;
+
+        auto template_name = enermy_object[t];
+        game_world_->deployGameRole(GameObject::CampType::ENERMY1, template_name);
+    }
+
+    if (tick_count_ % enermy_rush_interval == 0)
+    {
+        game_world_->letAllEnermyRush();
+    }
+}
+
+ax::ui::Button* GameUI::initButton(const std::string& btnFile, const std::string& templateName, const ax::Vec2& pos)
+{
+    auto btn = ui::Button::create(btnFile);
+    btn->setAnchorPoint(Vec2::ZERO);
+    btn->setPosition(pos);
+
+    btn->addTouchEventListener([=](Object* sender, ui::Widget::TouchEventType type) {
+        switch (type)
+        {
+        case ui::Widget::TouchEventType::BEGAN:
+            break;
+        case ui::Widget::TouchEventType::ENDED:
+            if (player_token_ >= gameobject_cost[templateName])
+            {
+                player_token_ -= gameobject_cost[templateName];
+                this->game_world_->deployGameRole(GameObject::CampType::PLAYER, templateName);
+            }
+            // AXLOGD("Button 1 clicked");
+            break;
+        default:
+            break;
+        }
+    });
+
+    return btn;
+}

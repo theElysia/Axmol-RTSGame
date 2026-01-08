@@ -4,7 +4,7 @@
 
 ### 项目结构
 
-![代码结构](D:\Download\CourseFile\数据结构与算法\期末作业\pics\CodeStructure.png)
+![代码结构](https://github.com/theElysia/Axmol-RTSGame/blob/main/pics/CodeStructure.png)
 
 + GameMap
   + GameMapManager，管理场景地图
@@ -325,4 +325,5 @@ public:
 anim_idle_   = RepeatForever::create(obj_template.anim_action_["idle"]->clone());
 anim_idle_->retain();
 anim_idle_->setTag(ActionTag::ANIMATION);
+
 ```

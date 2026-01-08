@@ -51,13 +51,13 @@ cmake ..
 
 ### 游戏基本内容
 
-![游戏画面](D:\Download\CourseFile\数据结构与算法\期末作业\pics\GameScene.png)
+![游戏画面](https://github.com/theElysia/Axmol-RTSGame/blob/main/pics/GameScene.jpg)
 
 点击右侧`Button`消耗一定点数部署角色。按住`ctrl`后滑动鼠标选中角色（或`ctrl+A`以全选），松开`ctrl`后鼠标点击地块引导角色移动。击破敌方大本营后游戏胜利。
 
 本游戏用了标准的配置驱动模式，使用excel配置角色动画以及数据，如下
 
-![角色配置信息](D:\Download\CourseFile\数据结构与算法\期末作业\pics\character_stats.png)
+![角色配置信息](https://github.com/theElysia/Axmol-RTSGame/blob/main/pics/character_stats.png)
 
 ---
 
@@ -87,4 +87,5 @@ cmake ..
 
 ### 代码简易文档
 
-[代码文档](D:\Download\CourseFile\数据结构与算法\期末作业\code_explanation.md)
+
+[代码文档](https://github.com/theElysia/Axmol-RTSGame/blob/main/code_explanation.md)

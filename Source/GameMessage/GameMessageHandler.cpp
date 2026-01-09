@@ -91,7 +91,7 @@ ResultType GameMessageHandler_Move::processChase(MessageRequestChase* msg)
     auto tobj = game_object_manager_->getGameObjectBy(tid);
     if (!sobj || !tobj)
         return ResultType::REJECTED;
-    auto path = GameMapManager::getInstance()->getSinglePath(sobj->getPosition(), tobj->getPosition());
+    auto path = game_map_manager_->getSinglePath(sobj->getPosition(), tobj->getPosition());
     if (path.has_value())
         command_pool_->addCommand<CommandMove>(sid, path.value(), 1);
     return ResultType::CONSUMED;
@@ -101,13 +101,11 @@ ResultType GameMessageHandler_Move::processRandomMove(MessageRequestRandomMove* 
 {
     auto sid  = msg->getSenderId();
     auto sobj = game_object_manager_->getGameObjectBy(sid);
-    AXLOGD("hand smove{}", sid);
     if (!sobj)
         return ResultType::REJECTED;
     std::vector<ax::Vec2> path;
-    path.push_back(GameMapManager::getInstance()->getRandomNearbyIdleTilePos(sobj->getPosition()));
+    path.push_back(game_map_manager_->getRandomNearbyIdleTilePos(sobj->getPosition()));
     command_pool_->addCommand<CommandMove>(sid, path, 3);
-    AXLOGD("hand smove{}  {}  {}", sid, path[0].x, path[0].y);
     return ResultType::CONSUMED;
 }
 

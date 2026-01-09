@@ -41,6 +41,10 @@ public:
             {
                 delete game_object_manager_;
             }
+            if (game_map_manager_)
+            {
+                delete game_map_manager_;
+            }
         }
     }
 

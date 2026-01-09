@@ -9,7 +9,7 @@ bool GameWorld::init()
         return false;
     }
 
-    game_map_manager_ = GameMapManager::getInstance();
+    game_map_manager_ = new GameMapManager;
     auto map_sprite   = game_map_manager_->init(this, "map3.tmx");
     this->addChild(map_sprite, 0, 0);
 
@@ -21,11 +21,13 @@ bool GameWorld::init()
 
     game_object_layer_   = ax::Node::create();
     game_object_manager_ = new GameObjectManager;
-    game_object_manager_->init(this, game_object_layer_, command_pool_);
+    game_object_manager_->init(this, game_object_layer_, command_pool_, game_map_manager_);
     this->addChild(game_object_layer_, 1, 1);
 
-    auto msg_handler1 = std::make_shared<GameMessageHandler_Attack>(command_pool_, game_object_manager_);
-    auto msg_handler2 = std::make_shared<GameMessageHandler_Move>(command_pool_, game_object_manager_);
+    auto msg_handler1 =
+        std::make_shared<GameMessageHandler_Attack>(command_pool_, game_object_manager_, game_map_manager_);
+    auto msg_handler2 =
+        std::make_shared<GameMessageHandler_Move>(command_pool_, game_object_manager_, game_map_manager_);
     msg_handler1->setNext(msg_handler2);
     game_message_handler_ = msg_handler1;
 
@@ -126,7 +128,7 @@ void GameWorld::handleMessage(GameMessage* msg)
 {
     if (game_message_handler_)
     {
-        AXLOGD("process msg {}  from {}", static_cast<int>(msg->getType()), msg->getSenderId());
+        // AXLOGD("process msg {}  from {}", static_cast<int>(msg->getType()), msg->getSenderId());
         game_message_handler_->handle(msg);
     }
     delete msg;

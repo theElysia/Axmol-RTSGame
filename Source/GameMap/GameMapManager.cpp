@@ -103,17 +103,18 @@ ax::Vec2 GameMapManager::getRandomNearbyIdleTilePos(const ax::Vec2& src)
     int sx = src.x / tile_size_.x;
     int sy = (map_size_.y - src.y) / tile_size_.y;
 
-    static constexpr int nx[4] = {1, -1, 0, 0};
-    static constexpr int ny[4] = {0, 0, 1, -1};
+    static constexpr int nx[5] = {1, -1, 0, 0, 0};
+    static constexpr int ny[5] = {0, 0, 1, -1, 0};
 
-    int rd = ax::random<int>(0, 3);
-    for (int i = 0; i < 4; i++)
+    int rd = ax::random<int>(0, 4);
+    for (int i = 0; i < 5; i++)
     {
-        int id = (rd + i) % 4;
+        int id = (rd + i) % 5;
         int x  = sx + nx[id];
         int y  = sy + ny[id];
         if (isTileValid(x, y))
-            return transTileToPixel(x, y);
+            // return transTileToPixel(x, y);
+            return transTileToRandomPixel(x, y);
     }
 
     return src;
@@ -125,6 +126,13 @@ ax::Vec2 GameMapManager::transTileToPixel(int tileX, int tileY)
     float y = map_size_.y - (tileY + 0.5) * tile_size_.y;
     // float x = tileX * tile_size_.x;
     // float y = map_size_.y - tileY * tile_size_.y;
+    return ax::Vec2(x, y);
+}
+
+ax::Vec2 GameMapManager::transTileToRandomPixel(int tileX, int tileY)
+{
+    float x = (tileX + ax::random<float>(0.0f, 1.0f)) * tile_size_.x;
+    float y = map_size_.y - (tileY + ax::random<float>(0.0f, 1.0f)) * tile_size_.y;
     return ax::Vec2(x, y);
 }
 

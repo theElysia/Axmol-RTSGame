@@ -29,9 +29,11 @@
 
 ### setup
 
-请提前已安装Axmol与Visual Studio
-创建项目后，确保可以用Visual Studio打开并运行（打开`.sln`或`.slnx`文件，`F5`运行）
-注意下载Visual Studio时把游戏开发(UE/Cocos)的那一项选上
+请提前安装好Axmol与Visual Studio。
+
+创建项目后，确保可以用Visual Studio打开并运行（打开`.sln`或`.slnx`文件，`F5`运行）。
+
+注意下载Visual Studio时把游戏开发(UE/Cocos)的那一项选上。
 
 ```bash
 axmol new -p dev.axmol.mygame -d project/mygame -l cpp mygame
@@ -53,9 +55,9 @@ cmake ..
 
 ![游戏画面](https://github.com/theElysia/Axmol-RTSGame/blob/main/pics/GameScene.jpg)
 
-点击右侧`Button`消耗一定点数部署角色。按住`ctrl`后滑动鼠标选中角色（或`ctrl+A`以全选），松开`ctrl`后鼠标点击地块引导角色移动。击破敌方大本营后游戏胜利。
+点击右侧`Button`消耗一定点数部署角色。按住`ctrl`后滑动鼠标选中角色（或`ctrl+A`以全选），鼠标点击地块引导角色移动，`Esc`取消选中。击破敌方大本营后游戏胜利。
 
-本游戏用了标准的配置驱动模式，使用excel配置角色动画以及数据，如下
+本游戏用了标准的配置驱动模式，使用excel配置角色动画以及数据，示例如下
 
 ![角色配置信息](https://github.com/theElysia/Axmol-RTSGame/blob/main/pics/character_stats.png)
 
@@ -89,3 +91,5 @@ cmake ..
 
 
 [代码文档](https://github.com/theElysia/Axmol-RTSGame/blob/main/code_explanation.md)
+
+<!-- [ppt]() -->

@@ -6,6 +6,8 @@ using namespace ax;
 
 // EventKeyboard::KeyCode::KEY_A;
 
+static std::vector<std::string> enermy_object = {"Slime", "Mushroom", "Ghost", "Skeleton"};
+
 bool GameScene::init()
 {
     if (!Scene::init())
@@ -19,6 +21,7 @@ bool GameScene::init()
 
     touch_listener_               = EventListenerTouchOneByOne::create();
     touch_listener_->onTouchBegan = AX_CALLBACK_2(GameScene::onTouchBegin, this);
+    touch_listener_->onTouchMoved = AX_CALLBACK_2(GameScene::onTouchMoved, this);
     touch_listener_->onTouchEnded = AX_CALLBACK_2(GameScene::onTouchEnded, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touch_listener_, this);
 
@@ -29,14 +32,32 @@ bool GameScene::init()
 
     auto closeItem = MenuItemLabel::create(Label::createWithSystemFont("Back", "Arial", 16),
                                            AX_CALLBACK_1(GameScene::onGameBack, this));
-
     closeItem->setPosition(Vec2(540, 300));
     auto menu = Menu::create(closeItem, nullptr);
     menu->setPosition(Vec2::ZERO);
 
-    this->addChild(game_world_, 0, 0);
-    this->addChild(gameUI_, 1, 1);
-    this->addChild(menu, 2, 2);
+    auto checkbox = ui::CheckBox::create("CheckBox_Normal.png", "CheckBox_Press.png", "CheckBoxNode_Normal.png",
+                                         "CheckBox_Disable.png", "CheckBoxNode_Disable.png");
+    checkbox->setPosition(Vec2(540, 20));
+    checkbox->setScale(0.5f);
+
+    checkbox->addTouchEventListener([=](ax::Object* sender, ui::Widget::TouchEventType type) {
+        switch (type)
+        {
+        case ui::Widget::TouchEventType::BEGAN:
+            break;
+        case ui::Widget::TouchEventType::ENDED:
+            this->switchKeyCrtl();
+            break;
+        default:
+            break;
+        }
+    });
+
+    this->addChild(game_world_, 0, "gameworld");
+    this->addChild(gameUI_, 1, "gameui");
+    this->addChild(menu, 2, "back");
+    this->addChild(checkbox, 2, "checkbox");
 
     game_world_rect_.origin = Vec2::ZERO;
     game_world_rect_.size   = game_world_->getMapSize();
@@ -60,11 +81,32 @@ void GameScene::update(float delta)
     {
         gameUI_->update(delta);
         game_world_->update(delta);
+        if (key_k_switch_)
+            this->enermyActionLogic();
     }
     else if (!game_ended_)
     {
         game_ended_ = true;
         makeFinalEd(game_world_->getGameResult());
+    }
+}
+
+void GameScene::enermyActionLogic()
+{
+    constexpr int enermy_interval      = 400;
+    constexpr int enermy_rush_interval = 1000;
+    tick_count_++;
+    if (tick_count_ % enermy_interval == 0)
+    {
+        int t = ax::random<int>(0, 5) % 4;
+
+        auto template_name = enermy_object[t];
+        game_world_->deployGameRole(GameObject::CampType::ENERMY1, template_name);
+    }
+
+    if (tick_count_ % enermy_rush_interval == 0)
+    {
+        game_world_->letAllEnermyRush();
     }
 }
 
@@ -100,22 +142,22 @@ void GameScene::onKeyPressed(ax::EventKeyboard::KeyCode code, ax::Event* event)
     switch (code)
     {
     case EventKeyboard::KeyCode::KEY_1:
-        game_world_->deployGameRole(GameObject::CampType::PLAYER, "Knight");
+        game_world_->deployGameRole(keyL(), "Knight");
         break;
     case EventKeyboard::KeyCode::KEY_2:
-        game_world_->deployGameRole(GameObject::CampType::ENERMY1, "Wizard");
+        game_world_->deployGameRole(keyL(), "Wizard");
         break;
     case EventKeyboard::KeyCode::KEY_3:
-        game_world_->deployGameRole(GameObject::CampType::PLAYER, "Ghost");
+        game_world_->deployGameRole(keyL(), "Ghost");
         break;
     case EventKeyboard::KeyCode::KEY_4:
-        game_world_->deployGameRole(GameObject::CampType::PLAYER, "Skeleton");
+        game_world_->deployGameRole(keyL(), "Skeleton");
         break;
     case EventKeyboard::KeyCode::KEY_5:
-        game_world_->deployGameRole(GameObject::CampType::PLAYER, "Slime");
+        game_world_->deployGameRole(keyL(), "Slime");
         break;
     case EventKeyboard::KeyCode::KEY_6:
-        game_world_->deployGameRole(GameObject::CampType::PLAYER, "Mushroom");
+        game_world_->deployGameRole(keyL(), "Mushroom");
         break;
     case EventKeyboard::KeyCode::KEY_CTRL:
         key_ctrl_pressed_ = true;
@@ -126,7 +168,7 @@ void GameScene::onKeyPressed(ax::EventKeyboard::KeyCode code, ax::Event* event)
         break;
     case EventKeyboard::KeyCode::KEY_A:
         if (key_ctrl_pressed_)
-            game_world_->selectAll();
+            game_world_->selectAll(GameObject::GameObjectType::ROLE, keyL());
 
         break;
     case EventKeyboard::KeyCode::KEY_P:
@@ -135,6 +177,9 @@ void GameScene::onKeyPressed(ax::EventKeyboard::KeyCode code, ax::Event* event)
 
     case EventKeyboard::KeyCode::KEY_L:
         key_l_switch_ = !key_l_switch_;
+        break;
+    case EventKeyboard::KeyCode::KEY_K:
+        key_k_switch_ = !key_k_switch_;
         break;
     default:
         break;
@@ -148,7 +193,6 @@ void GameScene::onKeyReleased(ax::EventKeyboard::KeyCode code, ax::Event* event)
     {
     case EventKeyboard::KeyCode::KEY_CTRL:
         key_ctrl_pressed_ = false;
-
         break;
 
     default:
@@ -158,15 +202,22 @@ void GameScene::onKeyReleased(ax::EventKeyboard::KeyCode code, ax::Event* event)
 
 bool GameScene::onTouchBegin(ax::Touch* touch, ax::Event* event)
 {
-    cursor_point_pressed_ = touch->getLocation();
+    touch_point_pressed_ = touch->getLocation();
+    touch_point_moved_   = false;
     return true;
 }
+
+void GameScene::onTouchMoved(ax::Touch* touch, ax::Event* event)
+{
+    touch_point_moved_ = true;
+}
+
 void GameScene::onTouchEnded(ax::Touch* touch, ax::Event* event)
 {
-    cursor_point_released_ = touch->getLocation();
-    if (key_ctrl_pressed_)
+    touch_point_released_ = touch->getLocation();
+    if (key_ctrl_pressed_ && touch_point_moved_)
         this->selectGameObjectWithCursor();
-    if (!key_ctrl_pressed_)
+    else
         this->moveSelectedObjectTo();
 }
 
@@ -175,10 +226,10 @@ void GameScene::selectGameObjectWithCursor()
     if (game_world_->getGameState() != GameWorld::GameStateType::RUNNING)
         return;
     if (key_l_switch_)
-        game_world_->selectObject(cursor_point_pressed_, cursor_point_released_, GameObject::GameObjectType::ROLE,
+        game_world_->selectObject(touch_point_pressed_, touch_point_released_, GameObject::GameObjectType::ROLE,
                                   GameObject::CampType::ENERMY1);
     else
-        game_world_->selectObject(cursor_point_pressed_, cursor_point_released_, GameObject::GameObjectType::ROLE,
+        game_world_->selectObject(touch_point_pressed_, touch_point_released_, GameObject::GameObjectType::ROLE,
                                   GameObject::CampType::PLAYER);
 }
 
@@ -203,8 +254,8 @@ void GameScene::moveSelectedObjectTo()
 {
     if (game_world_->getGameState() != GameWorld::GameStateType::RUNNING)
         return;
-    if (game_world_rect_.containsPoint(cursor_point_pressed_))
-        game_world_->moveSelectedObjTo(cursor_point_pressed_);
+    if (game_world_rect_.containsPoint(touch_point_pressed_))
+        game_world_->moveSelectedObjTo(touch_point_pressed_);
 }
 
 void GameScene::initBaseCamp()

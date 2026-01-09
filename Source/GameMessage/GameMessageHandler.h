@@ -5,6 +5,7 @@
 
 class RTSCommandPool;
 class GameObjectManager;
+class GameMapManager;
 
 class GameMessageHandler
 {
@@ -48,8 +49,10 @@ private:
 class GameMessageHandler_Attack : public GameMessageHandler
 {
 public:
-    GameMessageHandler_Attack(RTSCommandPool* commandPool, GameObjectManager* gameObjectManager)
-        : command_pool_(commandPool), game_object_manager_(gameObjectManager)
+    GameMessageHandler_Attack(RTSCommandPool* commandPool,
+                              GameObjectManager* gameObjectManager,
+                              GameMapManager* gameMapManager)
+        : command_pool_(commandPool), game_object_manager_(gameObjectManager), game_map_manager_(gameMapManager)
     {}
 
 protected:
@@ -66,13 +69,16 @@ private:
 
     RTSCommandPool* command_pool_           = nullptr;
     GameObjectManager* game_object_manager_ = nullptr;
+    GameMapManager* game_map_manager_       = nullptr;
 };
 
 class GameMessageHandler_Move : public GameMessageHandler
 {
 public:
-    GameMessageHandler_Move(RTSCommandPool* commandPool, GameObjectManager* gameObjectManager)
-        : command_pool_(commandPool), game_object_manager_(gameObjectManager)
+    GameMessageHandler_Move(RTSCommandPool* commandPool,
+                            GameObjectManager* gameObjectManager,
+                            GameMapManager* gameMapManager)
+        : command_pool_(commandPool), game_object_manager_(gameObjectManager), game_map_manager_(gameMapManager)
     {}
 
 protected:
@@ -91,4 +97,5 @@ private:
 
     RTSCommandPool* command_pool_           = nullptr;
     GameObjectManager* game_object_manager_ = nullptr;
+    GameMapManager* game_map_manager_       = nullptr;
 };

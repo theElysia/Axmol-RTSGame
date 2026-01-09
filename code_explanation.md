@@ -38,7 +38,7 @@
 
 ### 设计模式讲解
 
-部分次要的就不讲了，太naive了。
+部分次要的就不讲了，只讲一些重要的。
 
 ##### 工厂模式(Factory)
 
@@ -57,6 +57,9 @@ public:
 静态工厂就不多说了。二段构造主要是将内存分配与初始化分离。我们知道c++构造函数没有返回值，用这种方法可以避免内存申请失败错误。使用时通常如下：
 
 ```cpp
+auto game_role = ax::utils::createInstance<GameRole>(&GameRole::init, args...);
+auto scene = utils::createInstance<MenuScene>();
+
 template <typename T, typename F, typename... Ts>
 inline T* createInstance(F&& finit, Ts&&... args)
 {
@@ -76,9 +79,6 @@ inline T* createInstance()
 {
     return ::ax::utils::createInstance<T>(&T::init);
 }
-
-auto game_role = ax::utils::createInstance<GameRole>(&GameRole::init, args...);
-auto scene = utils::createInstance<MenuScene>();
 ```
 
 ##### 建造者模式(Builder)
@@ -90,10 +90,13 @@ auto scene = utils::createInstance<MenuScene>();
 
 ##### 装饰模式(Decorator)
 
-这里主要是提一下`std::bind`方法，可以快速修饰一个函数（可选固定部分参数），通常用于传递类的成员函数（将其与this绑定），比用`lambda`方便并且明确。
+这里主要是提一下`std::bind`方法，可以快速修饰一个函数（可选固定部分参数），通常用于传递类的成员函数（将其与this绑定），比用`lambda`方便并且明确。代码中通常使用宏来实现。
 
 ```cpp
 std::bind(&func, fixed_arg, std::::placeholders::_1);
+
+AX_CALLBACK_2(GameScene::onKeyReleased, this);
+void GameScene::onKeyReleased(ax::EventKeyboard::KeyCode code, ax::Event* event);
 ```
 
 ##### 单例模式(Singleton)
@@ -123,7 +126,9 @@ public:
 };
 ```
 
-当然在开发过程中发现单例其实很容易滥用（这就相当于一个全局变量），其生命周期以及可见性会产生问题，所以还是尽量避免使用。例如GameObjectManager就未使用单例，但GameMapManager还是使用单例了，因为挺多地方需要用到寻路（GameWorld,MessageHandler）。
+当然在开发过程中发现单例其实很容易滥用（这就相当于一个全局变量），其生命周期以及可见性会产生问题，所以还是尽量避免使用。
+
+例如通过精心设计，`GameObjectManager`与`GameMapManager`最终没有采用单例模式，这样可以明确其可见性，便于维护。
 
 
 ##### 观察者模式(Observer)
@@ -158,13 +163,33 @@ public:
 
 ##### 蝇量/享元模式(Flyweight)
 
-RTS游戏中有大量游戏对象，而且要实现选中移动等功能（对玩家输入做出响应）。若每个对象分别作为一个观察者注册到事件列表中，那么显然性能问题严重。这时候就需要有统一管理的`GameObjectManager`，同时一些选中状态/大本营管理等逻辑也可以由其完成。
+RTS游戏中有大量游戏对象，而且要实现选中移动等功能（对玩家输入做出响应）。若每个对象分别作为一个观察者注册到事件列表中，那么显然性能问题严重。这时候就需要有统一管理的`GameObjectManager`，同时一些选中状态/大本营管理等业务逻辑也可以由其完成。
 
 ##### 状态模式(State)
 
 随着游戏进行，一个游戏对象会有多种状态，比如战斗与空闲，行为上说就是不同状态下会有不同的基础逻辑与响应动作，那么这样就需要状态模式来介入，提供可扩展性与可维护性。
 
 当然，为了进一步提升性能，避免过多子类，我使用了静态状态，`Object`和`Context`相当于每次作为参数提供。
+
+```cpp
+class GameObject : public ax::Sprite
+{
+public:
+    virtual void handleCommand(GameCommand* cmd) = 0;
+
+    void sendMessage(GameMessage* msg);
+};
+
+class GameRole : public GameObject
+{
+public:
+    void setState(GameRoleState* newState) { current_state_ = newState; }
+    GameRoleState* getCurrentState() { return current_state_; }
+
+    void update(float delta) override { current_state_->update(this); }
+    void handleCommand(GameCommand* cmd) override { current_state_->handleCommand(this, cmd); }
+}；
+```
 
 ```cpp
 // State Pattern & Singleton & CRTP
@@ -192,7 +217,7 @@ private:
 
 ##### 责任链模式(Chain of Responsibility)
 
-`GameMessage`由`GameObject`产生并向上传播，接受这样的消息并处理很自然想到用责任链模式。
+`GameMessage`由`GameObject`产生并向上传播，接受这样的消息并处理很自然想到用责任链模式。就是设计多个handler，逐次调用handler来处理一个消息，每个handler可以只处理部分消息，未处理的沿着链往后传递。
 
 ```cpp
 class GameMessageHandler
@@ -210,21 +235,7 @@ public:
 
     void setNext(std::shared_ptr<GameMessageHandler> next) { next_ = next; }
 
-    ResultType handle(GameMessage* msg)
-    {
-        GameMessageHandler* current = this;
-
-        while (current)
-        {
-            if (current->canHandle(msg))
-            {
-                return current->process(msg);
-            }
-            current = current->next_.get();
-        }
-
-        return ResultType::UNHANDLED;
-    }
+    ResultType handle(GameMessage* msg);
 
 protected:
     virtual bool canHandle(GameMessage* msg) const = 0;
@@ -233,21 +244,31 @@ protected:
 private:
     std::shared_ptr<GameMessageHandler> next_;
 };
+
+
+ResultType GameMessageHandler::handle(GameMessage* msg)
+{
+    GameMessageHandler* current = this;
+
+    while (current)
+    {
+        if (current->canHandle(msg))
+        {
+            return current->process(msg);
+        }
+        current = current->next_.get();
+    }
+
+    return ResultType::UNHANDLED;
+}
 ```
 
 ##### 命令模式(Command)
 
-显然`GameCommand`描述的就是这种模式，当然这也需要`GameObject`，`RTSCommandPool`的配合。为了实现高效，`RTSCommandPool`的设计还是较为复杂的，有内存池管理，双缓冲结构，批处理模式（可选并行）。
-
-```cpp
-class GameObject : public ax::Sprite
-{
-public:
-    virtual void handleCommand(GameCommand* cmd) = 0;
-
-    void sendMessage(GameMessage* msg);
-};
-```
+显然`GameCommand`描述的就是这种模式，当然这也需要`GameObject`，`RTSCommandPool`的配合。为了适应RTS高并发命令的场景，`RTSCommandPool`的设计还是较为复杂的，目前实现了
++ 内存池管理，所有命令均存放于固定内存池中
++ 双缓冲结构，缓冲相邻帧的命令
++ 批处理模式，批量处理上一帧的命令，优化手段有并行和分组（提高缓存命中）。
 
 ```cpp
 class GameCommand
@@ -291,35 +312,39 @@ public:
 
     // 添加命令到当前帧缓冲区，并自动分组
     template <typename T, typename... Args>
-    void addCommand(Args&&... args)
-    {
-        static_assert(std::is_base_of_v<GameCommand, T>, "T must be derived from GameCommand");
-
-        FrameBuffer& currentBuffer = frameBuffers[currentBufferIndex];
-
-        auto cmd = this->createCommand<T>(currentBuffer, std::forward<Args>(args)...);
-
-        GameCommand::CommandType cmdType = cmd->getType();
-        auto& commandGroup               = currentBuffer.getCommandGroup(cmdType);
-
-        commandGroup.push_back(std::move(cmd));
-        currentBuffer.totalCommands++;
-
-        if (currentBuffer.totalCommands >= MAX_COMMANDS_PER_FRAME)
-        {
-            handleCommandOverflow();
-        }
-    }
+    void addCommand(Args&&... args);
 
     void processPreviousFrame(GameObjectManager* manager);
     void swapBuffers();
     void clearAll();
 };
+
+
+template <typename T, typename... Args>
+void RTSCommandPool::addCommand(Args&&... args)
+{
+    static_assert(std::is_base_of_v<GameCommand, T>, "T must be derived from GameCommand");
+
+    FrameBuffer& currentBuffer = frameBuffers[currentBufferIndex];
+
+    auto cmd = this->createCommand<T>(currentBuffer, std::forward<Args>(args)...);
+
+    GameCommand::CommandType cmdType = cmd->getType();
+    auto& commandGroup               = currentBuffer.getCommandGroup(cmdType);
+
+    commandGroup.push_back(std::move(cmd));
+    currentBuffer.totalCommands++;
+
+    if (currentBuffer.totalCommands >= MAX_COMMANDS_PER_FRAME)
+    {
+        handleCommandOverflow();
+    }
+}
 ```
 
 ##### 原型模式(Prototype)
 
-游戏会有大量重复`GameObject`对象，通过提前设置一个原型可以极大降低创建游戏对象的开销。实际上这是与`.plist`制作结合的，需要提前将动画帧读取到内存中，并根据动画配置信息制作基本动画。
+游戏会有大量重复`GameObject`对象，通过提前设置一个原型可以极大降低创建游戏对象的开销,在创建新对象时使用`clone`即可。实际上这是与`.plist`制作结合的，需要提前将动画帧读取到内存中，并根据动画配置信息制作基本动画。
 
 ```cpp
 anim_idle_   = RepeatForever::create(obj_template.anim_action_["idle"]->clone());

@@ -7,11 +7,15 @@
 
 using namespace ax;
 
-void GameObjectManager::init(GameWorld* gameWorld, ax::Node* gameObjectLayer, RTSCommandPool* commandPool)
+void GameObjectManager::init(GameWorld* gameWorld,
+                             ax::Node* gameObjectLayer,
+                             RTSCommandPool* commandPool,
+                             GameMapManager* gameMapManager)
 {
     game_world_        = gameWorld;
     game_object_layer_ = gameObjectLayer;
     command_pool_      = commandPool;
+    game_map_manager_  = gameMapManager;
 }
 
 void GameObjectManager::handleMessage(GameMessage* msg)
@@ -33,15 +37,9 @@ void GameObjectManager::update(float delta)
         }
     }
     if (base_camp_alive_[GameObject::CampType::ENERMY1] == false)
-    {
-        AXLOGD("camp destory {}", static_cast<int>(GameObject::CampType::ENERMY1));
         game_world_->setGameEnded(GameWorld::GameResultType::VICTORY);
-    }
     if (base_camp_alive_[GameObject::CampType::PLAYER] == false)
-    {
-        AXLOGD("camp destory {}", static_cast<int>(GameObject::CampType::PLAYER));
         game_world_->setGameEnded(GameWorld::GameResultType::DEFEATED);
-    }
     this->removeAllReadyToRemoveGameObjects();
     for (auto& it : game_object_pool_)
     {
@@ -158,15 +156,14 @@ void GameObjectManager::cancelAllSelected()
 
 void GameObjectManager::moveSelectedObjTo(const ax::Vec2& position)
 {
-    auto _manager = GameMapManager::getInstance();
-    _manager->setDestForMassivePath(position);
+    game_map_manager_->setDestForMassivePath(position);
     for (auto id : selected_object_)
     {
         auto obj = this->getGameObjectBy(id);
         if (obj)
         {
             auto pos  = obj->getPosition();
-            auto path = _manager->getMassivePath(pos);
+            auto path = game_map_manager_->getMassivePath(pos);
             if (path.has_value())
                 command_pool_->addCommand<CommandMove>(id, std::move(path.value()), 0);
         }

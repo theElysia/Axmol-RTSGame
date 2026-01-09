@@ -34,7 +34,7 @@ bool PathFinder_FlowField::init(const std::vector<bool>& grid, int x, int y)
 // 把全图用bfs遍历,dst=1,idx递增
 void PathFinder_FlowField::setDest(const Point& dst)
 {
-    AXLOGD("start setDest");
+    AXLOGD("start setDest {}  {}", dst.x, dst.y);
     if (dst_ == dst || !withinBoundary(dst))
         return;
     dst_ = dst;
@@ -46,7 +46,6 @@ void PathFinder_FlowField::setDest(const Point& dst)
         return;
     grid_index_[tdst] = 1;
 
-    AXLOGD("start setDest2");
     while (!q.empty())
     {
         Point pos = q.front();
@@ -65,13 +64,11 @@ void PathFinder_FlowField::setDest(const Point& dst)
             }
         }
     }
-    AXLOGD("start setDest3");
 }
 
 // 找路并标记当前格方向，带有平滑操作
 std::optional<std::vector<Point>> PathFinder_FlowField::findPath(const Point& src)
 {
-    AXLOGD("start findPath1");
     Point pos = src;
     int tpos  = transPoint(pos);
     if (!withinBoundary(pos) || grid_index_[tpos] <= 0)
@@ -85,7 +82,6 @@ std::optional<std::vector<Point>> PathFinder_FlowField::findPath(const Point& sr
     ret.reserve(idx);
     ret.push_back(pos);
 
-    AXLOGD("start findPath2");
     while (idx != 1)
     {
         // 已经寻迹过了
@@ -115,15 +111,12 @@ std::optional<std::vector<Point>> PathFinder_FlowField::findPath(const Point& sr
             }
         }
     }
-
-    AXLOGD("start findPath4");
     return ret;
 }
 
 // 沿着以前的流迹快速找路
 void PathFinder_FlowField::flowAlongTrace(const Point& src, std::vector<Point>& path)
 {
-    AXLOGD("start findPath3");
     auto pos = src;
     for (int i = grid_index_[transPoint(pos)] - 1; i > 0; i--)
     {
@@ -135,11 +128,9 @@ void PathFinder_FlowField::flowAlongTrace(const Point& src, std::vector<Point>& 
 
 void PathFinder_FlowField::resetField()
 {
-    AXLOGD("start reset");
     for (int i = 0; i < wtotal_; i++)
     {
         grid_index_[i] = grid_[i] ? 0 : -1;
         grid_flow_[i]  = DirectionType::UNDEF;
     }
-    AXLOGD("finish reset");
 }

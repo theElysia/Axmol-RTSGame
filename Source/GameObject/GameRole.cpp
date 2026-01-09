@@ -283,10 +283,17 @@ void GameRoleStateIdle::handleCommand(GameRole* role, GameCommand* cmd)
         auto action   = role->h_move_.getMoveAction(role->getPosition(), data.path);
         if (role->isMoveActionValid(strategy))
         {
-            ax::Sequence* t = ax::Sequence::create(
-                action, CallFunc::create([=]() { role->setState(GameRoleStateIdle::getInstance()); }), nullptr);
-            role->moveAction(t, strategy);
-            role->setState(GameRoleStateMove::getInstance());
+            if (strategy == 0)
+            {
+                ax::Sequence* t = ax::Sequence::create(
+                    action, CallFunc::create([=]() { role->setState(GameRoleStateIdle::getInstance()); }), nullptr);
+                role->moveAction(t, strategy);
+                role->setState(GameRoleStateMove::getInstance());
+            }
+            else
+            {
+                role->moveAction(action, strategy);
+            }
         }
     }
     break;
@@ -397,8 +404,6 @@ void GameRoleStateFight::handleCommand(GameRole* role, GameCommand* cmd)
 
         if (!role->h_atk_.isTargetWithinAtkRange(role, target))
             role->setTargetObject(sid);
-
-        role->setState(GameRoleStateFight::getInstance());
     }
     break;
 
@@ -408,13 +413,19 @@ void GameRoleStateFight::handleCommand(GameRole* role, GameCommand* cmd)
         auto data     = command->getData();
         auto strategy = data.strategy;
         auto action   = role->h_move_.getMoveAction(role->getPosition(), data.path);
-        if (role->isMoveActionValid(strategy) && strategy <= 1)
+        if (role->isMoveActionValid(strategy))
         {
-            auto cur_state  = role->getCurrentState();
-            ax::Sequence* t = ax::Sequence::create(
-                action, CallFunc::create([=]() { role->setState(GameRoleStateFight::getInstance()); }), nullptr);
-            role->moveAction(t, strategy);
-            role->setState(GameRoleStateMove::getInstance());
+            if (strategy == 0)
+            {
+                ax::Sequence* t = ax::Sequence::create(
+                    action, CallFunc::create([=]() { role->setState(GameRoleStateFight::getInstance()); }), nullptr);
+                role->moveAction(t, strategy);
+                role->setState(GameRoleStateMove::getInstance());
+            }
+            else
+            {
+                role->moveAction(action, strategy);
+            }
         }
     }
     break;

@@ -7,6 +7,7 @@
 class RTSCommandPool;
 class GameWorld;
 class GameMessage;
+class GameMapManager;
 
 class GameObjectManager
 {
@@ -15,7 +16,10 @@ public:
     ~GameObjectManager() = default;
 
 public:
-    void init(GameWorld* gameWorld, ax::Node* gameObjectLayer, RTSCommandPool* commandPool);
+    void init(GameWorld* gameWorld,
+              ax::Node* gameObjectLayer,
+              RTSCommandPool* commandPool,
+              GameMapManager* gameMapManager);
 
     void update(float delta);
 
@@ -54,9 +58,10 @@ private:
     // void sendMessage(GameMessage* msg);
 
 private:
-    GameWorld* game_world_        = nullptr;
-    ax::Node* game_object_layer_  = nullptr;
-    RTSCommandPool* command_pool_ = nullptr;
+    GameWorld* game_world_            = nullptr;
+    ax::Node* game_object_layer_      = nullptr;
+    RTSCommandPool* command_pool_     = nullptr;
+    GameMapManager* game_map_manager_ = nullptr;
 
     int tick_ = 0;
 

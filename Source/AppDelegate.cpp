@@ -89,6 +89,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     FileUtils::getInstance()->addSearchPath("res/tilemaps");
     FileUtils::getInstance()->addSearchPath("res/characters");
     FileUtils::getInstance()->addSearchPath("res/UI-components");
+    FileUtils::getInstance()->addSearchPath("res/UI-components-back");
 
     // Set the design resolution
     renderView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height,

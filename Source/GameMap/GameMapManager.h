@@ -2,12 +2,11 @@
 
 #include "axmol.h"
 #include "GameMap/PathFinderStrategy.h"
-#include "BaseTemplates.h"
 #include <optional>
 
 class GameWorld;
 
-class GameMapManager : public Singleton<GameMapManager>
+class GameMapManager
 {
 public:
     static constexpr int water_id  = 42;
@@ -24,11 +23,9 @@ public:
 
     ax::Vec2 getRandomNearbyIdleTilePos(const ax::Vec2& src);
     ax::Vec2 transTileToPixel(int tileX, int tileY);
+    ax::Vec2 transTileToRandomPixel(int tileX, int tileY);
 
 private:
-    friend class Singleton<GameMapManager>;
-    GameMapManager() = default;
-
     bool isTileValid(int tileX, int tileY);
 
 private:

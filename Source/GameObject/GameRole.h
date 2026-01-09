@@ -109,33 +109,27 @@ private:
     int current_move_strategy_ = -1;
 };
 
-class GameRoleStateIdle : public GameRoleState, public Singleton<GameRoleStateIdle>
+class GameRoleStateIdle : public GameRoleState
 {
+    DECLARE_SINGLETON(GameRoleStateIdle)
 public:
     void update(GameRole* role) override;
     void handleCommand(GameRole* role, GameCommand* cmd) override;
-
-private:
-    friend class Singleton<GameRoleStateIdle>;
-    GameRoleStateIdle() = default;
 };
 
 // 快速声明状态类
-#define DECLARE_GAME_ROLE_STATE(StateName)                                                            \
-    class GameRoleState##StateName : public GameRoleState, public Singleton<GameRoleState##StateName> \
-    {                                                                                                 \
-    public:                                                                                           \
-        void update(GameRole* role) override;                                                         \
-        void handleCommand(GameRole* role, GameCommand* cmd) override;                                \
-                                                                                                      \
-    private:                                                                                          \
-        friend class Singleton<GameRoleState##StateName>;                                             \
-        GameRoleState##StateName() = default;                                                         \
+#define DECLARE_GAME_ROLE_STATE(StateName)                             \
+    class StateName : public GameRoleState                             \
+    {                                                                  \
+        DECLARE_SINGLETON(StateName)                                   \
+    public:                                                            \
+        void update(GameRole* role) override;                          \
+        void handleCommand(GameRole* role, GameCommand* cmd) override; \
     };
 
 // DECLARE_GAME_ROLE_STATE(Idle)
-DECLARE_GAME_ROLE_STATE(Move)
-DECLARE_GAME_ROLE_STATE(Fight)
-DECLARE_GAME_ROLE_STATE(Dead)
+DECLARE_GAME_ROLE_STATE(GameRoleStateMove)
+DECLARE_GAME_ROLE_STATE(GameRoleStateFight)
+DECLARE_GAME_ROLE_STATE(GameRoleStateDead)
 
 #undef DECLARE_GAME_ROLE_STATE

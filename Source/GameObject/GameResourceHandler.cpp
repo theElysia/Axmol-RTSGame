@@ -7,40 +7,48 @@ using namespace ax;
 bool GameResourceHandler::init(const std::string& animation_csv, const std::string& characters_csv)
 {
     obj_templates_.clear();
-    auto fileUtils      = FileUtils::getInstance();
-    std::string csvPath = fileUtils->fullPathForFilename(characters_csv);
     // AXLOG(("try open " + csvPath).c_str());
-    if (!readStats(csvPath))
+    if (!readStats(characters_csv))
         return false;
-    csvPath = fileUtils->fullPathForFilename(animation_csv);
     // AXLOG(("try open " + csvPath).c_str());
-    if (!readAnimation(csvPath))
+    if (!readAnimation(animation_csv))
         return false;
     AXLOG("finish init GameResourceHandler");
-    // for (auto& it : obj_templates_)
-    // {
-    //     AXLOG((std::string("init template ") + it.first).c_str());
-    // }
     return true;
 }
 
 bool GameResourceHandler::readStats(const std::string& filename)
 {
-    std::ifstream file(filename, std::ios::in);
-    if (!file.is_open())
+    // 使用FileUtils读取文件内容
+    auto fileUtils = FileUtils::getInstance();
+
+    // 获取完整路径
+    std::string fullPath = fileUtils->fullPathForFilename(filename);
+
+    // 读取文件数据
+    Data data = fileUtils->getDataFromFile(fullPath);
+
+    if (data.isNull() || data.getSize() == 0)
     {
-        // AXLOGERROR(("Cannot open file: " + filename).c_str());
+        AXLOGERROR("Cannot open file: %s", filename.c_str());
         return false;
     }
-    else
-    {
-        // AXLOGD("Open file {}", filename);
-    }
+
+    // 将数据转换为字符串流
+    std::string fileContent((char*)data.getBytes(), data.getSize());
+    std::istringstream fileStream(fileContent);
+
     std::string line, _word;
     std::vector<std::string> words;
     std::istringstream sline;
-    std::getline(file, line);
-    while (std::getline(file, line))
+
+    // 跳过标题行（如果有）
+    if (!std::getline(fileStream, line))
+    {
+        return false;
+    }
+
+    while (std::getline(fileStream, line))
     {
         words.clear();
         sline.clear();
@@ -77,27 +85,46 @@ bool GameResourceHandler::readStats(const std::string& filename)
 
 bool GameResourceHandler::readAnimation(const std::string& filename)
 {
+    // 使用FileUtils读取文件内容
+    auto fileUtils = FileUtils::getInstance();
+
     auto spritecache = SpriteFrameCache::getInstance();
     for (auto& it : obj_templates_)
     {
-        spritecache->addSpriteFramesWithFile(it.second.anim_plist_str_);
+        auto file1 = fileUtils->fullPathForFilename(it.second.anim_plist_str_);
+        spritecache->addSpriteFramesWithFile(file1);
     }
+    auto file1 = fileUtils->fullPathForFilename("ui.plist");
+    AXLOG("open file: %s", file1.c_str());
+    spritecache->addSpriteFramesWithFile(file1);
 
-    std::ifstream file(filename, std::ios::in);
-    if (!file.is_open())
+    // 获取完整路径
+    std::string fullPath = fileUtils->fullPathForFilename(filename);
+
+    // 读取文件数据
+    Data data = fileUtils->getDataFromFile(filename);
+
+    if (data.isNull() || data.getSize() == 0)
     {
-        // AXLOGERROR(("Cannot open file: " + filename).c_str());
+        AXLOGERROR("Cannot open file: %s", filename.c_str());
         return false;
     }
-    else
-    {
-        // AXLOGD("Open file {}", filename);
-    }
+
+    // 将数据转换为字符串流
+    std::string fileContent((char*)data.getBytes(), data.getSize());
+    std::istringstream fileStream(fileContent);
+
     std::string line, _word;
     std::vector<std::string> words;
     std::istringstream sline;
-    std::getline(file, line);
-    while (std::getline(file, line))
+
+    // 跳过标题行（如果有）
+    if (!std::getline(fileStream, line))
+    {
+        return false;
+    }
+
+    while (std::getline(fileStream, line))
     {
         words.clear();
         sline.clear();
@@ -147,17 +174,17 @@ ax::Sprite* GameResourceHandler::createHpBar(const std::string& type)
     ax::ui::LoadingBar* hpbar = nullptr;
     if (type == "green")
     {
-        hpbar = ui::LoadingBar::create("HPBarGreen.png");
+        hpbar = ui::LoadingBar::create("HpBarGreen.png");
     }
     else
     {
-        hpbar = ui::LoadingBar::create("HPBarRed.png");
+        hpbar = ui::LoadingBar::create("HpBarRed.png");
     }
 
     hpbar->setAnchorPoint(Vec2::ZERO);
     hpbar->setPercent(100.0f);
 
-    auto hpbar_background = Sprite::create("HPBarBackground.png");
+    auto hpbar_background = Sprite::createWithSpriteFrameName("HpBarBackground.png");
     hpbar_background->setCascadeOpacityEnabled(true);
     hpbar_background->addChild(hpbar, 0, 0);
     hpbar_background->setScale(0.2f);
@@ -169,7 +196,7 @@ ax::Sprite* GameResourceHandler::createHpBar(const std::string& type)
 
 ax::Sprite* GameResourceHandler::createSelectTip(const std::string& type)
 {
-    auto tip = Sprite::create("SelectedTip.png");
+    auto tip = Sprite::createWithSpriteFrameName("SelectedTip.png");
     tip->setVisible(true);
     tip->setAnchorPoint(Vec2::ANCHOR_MIDDLE_BOTTOM);
 

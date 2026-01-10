@@ -98,7 +98,7 @@ GameMessage* AttributeHandler_Atk::launchAttack(GameObject* selfObj, GameObject*
 {
     if (face_func_ != nullptr)
     {
-        float x = targetObj->getPosition().x - selfObj->getPosition().y;
+        float x = targetObj->getPosition().x - selfObj->getPosition().x;
         if (x > 0)
             face_func_(AttributeHandler_FaceDirection::EAST);
         else if (x < 0)

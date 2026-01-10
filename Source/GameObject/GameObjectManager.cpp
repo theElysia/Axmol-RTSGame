@@ -62,7 +62,7 @@ GameObject* GameObjectManager::createGameObject(GameObject::GameObjectType gameO
 
     game_object_pool_[obj->getUniqueID()] = obj;
     game_object_layer_->addChild(obj, 0, obj->getUniqueID());
-    AXLOGD("make game object {}", obj->getUniqueID());
+    // AXLOGD("make game object {}", obj->getUniqueID());
     return obj;
 }
 

@@ -20,6 +20,7 @@ public:
     ax::Sprite* createSelectTip(const std::string& type);
 
     GameObjectTemplate& getObjTemplate(const std::string& templateName);
+    std::unordered_map<std::string, GameObjectTemplate>& getObjTemplatePool() { return obj_templates_; }
 
     void setTileSize(const ax::Vec2& tileSize);
 

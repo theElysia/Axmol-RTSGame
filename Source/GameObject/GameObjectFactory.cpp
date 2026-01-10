@@ -30,8 +30,8 @@ GameObject* GameObjectFactory::create(GameObjectManager* manager,
     case GameObjectType::BUILDING:
     {
         unique_id_counter_++;
-        // auto gameObject = new GameBuilding;
-        // gameObject->init(manager, gameObjectType, campType, templateName, position, unique_id_counter_);
+        // auto game_building = new GameBuilding;
+        // game_building->init(manager, gameObjectType, campType, templateName, position, unique_id_counter_);
         auto game_building = ax::utils::createInstance<GameBuilding>(
             &GameBuilding::init, manager, gameObjectType, campType, templateName, position, unique_id_counter_);
         return game_building;

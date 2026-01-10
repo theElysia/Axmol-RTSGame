@@ -29,7 +29,7 @@
 
 ### Release
 
-[Download]()
+[RTSGame-release-v1.0](https://github.com/theElysia/Axmol-RTSGame/releases/tag/Release-v1.0)
 
 ### Build
 

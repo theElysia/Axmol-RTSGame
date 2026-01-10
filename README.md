@@ -27,13 +27,17 @@
 
 ---
 
-### setup
+### Release
+
+[Download]()
+
+### Build
 
 请提前安装好Axmol与Visual Studio。
 
-创建项目后，确保可以用Visual Studio打开并运行（打开`.sln`或`.slnx`文件，`F5`运行）。
-
 注意下载Visual Studio时把游戏开发(UE/Cocos)的那一项选上。
+
+创建空项目后，先尝试用Visual Studio打开并运行（打开`.sln`或`.slnx`文件，`F5`运行，参考Axmol的教程文档）。
 
 ```bash
 axmol new -p dev.axmol.mygame -d project/mygame -l cpp mygame
@@ -76,10 +80,10 @@ cmake ..
   + 责任链模式
   + 命令模式
   + 原型模式
-+ 次要
   + 装饰器模式
-  + 代理模式
   + 组合模式
++ 次要
+  + 代理模式
   + 空对象模式
   + 模板方法模式
   + 迭代器模式
@@ -87,9 +91,9 @@ cmake ..
   + 备忘录模式（未实现存档）
   
 
-### 代码简易文档
+### 文档
 
 
 [代码文档](https://github.com/theElysia/Axmol-RTSGame/blob/main/code_explanation.md)
 
-<!-- [ppt]() -->
+[ppt](https://github.com/theElysia/Axmol-RTSGame/blob/main/ppt-release-v1.0.pdf)

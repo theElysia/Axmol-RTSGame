@@ -7,8 +7,8 @@ using namespace ax;
 
 static constexpr int token_increase_interval = 20;
 
-static std::unordered_map<std::string, int> gameobject_cost = {std::pair("Knight", 5), std::pair("Wizard", 10),
-                                                               std::pair("Ghost", 20), std::pair("Skeleton", 20)};
+static std::unordered_map<std::string, int> gameobject_cost = {std::pair("Knight", 5), std::pair("Wizard", 20),
+                                                               std::pair("Ghost", 12), std::pair("Skeleton", 8)};
 
 bool GameUI::init(GameWorld* game_world)
 {
@@ -19,16 +19,33 @@ bool GameUI::init(GameWorld* game_world)
 
     game_world_ = game_world;
 
-    float x1  = 5.0f;
-    auto btn1 = initButton("Knight_btn.png", "Knight", Vec2(x1, 220));
-    auto btn2 = initButton("Wizard_btn.png", "Wizard", Vec2(x1, 160));
-    auto btn3 = initButton("Ghost_btn.png", "Ghost", Vec2(x1, 100));
-    auto btn4 = initButton("Skeleton_btn.png", "Skeleton", Vec2(x1, 40));
+    const float x1 = 5.0f;
+    auto btn1      = initButton("Knight_btn.png", "Knight", Vec2(x1, 220));
+    auto btn2      = initButton("Wizard_btn.png", "Wizard", Vec2(x1, 160));
+    auto btn3      = initButton("Ghost_btn.png", "Ghost", Vec2(x1, 100));
+    auto btn4      = initButton("Skeleton_btn.png", "Skeleton", Vec2(x1, 40));
+
+    auto lb1 = Label::createWithSystemFont(std::to_string(gameobject_cost["Knight"]), "Arial", 24);
+    auto lb2 = Label::createWithSystemFont(std::to_string(gameobject_cost["Wizard"]), "Arial", 24);
+    auto lb3 = Label::createWithSystemFont(std::to_string(gameobject_cost["Ghost"]), "Arial", 24);
+    auto lb4 = Label::createWithSystemFont(std::to_string(gameobject_cost["Skeleton"]), "Arial", 24);
+    lb1->setPosition(Vec2(x1 + 50, 240));
+    lb2->setPosition(Vec2(x1 + 50, 180));
+    lb3->setPosition(Vec2(x1 + 50, 120));
+    lb4->setPosition(Vec2(x1 + 50, 60));
+    lb1->setColor(Color3B::ORANGE);
+    lb2->setColor(Color3B::ORANGE);
+    lb3->setColor(Color3B::ORANGE);
+    lb4->setColor(Color3B::ORANGE);
 
     this->addChild(btn1, 0);
     this->addChild(btn2, 0);
     this->addChild(btn3, 0);
     this->addChild(btn4, 0);
+    this->addChild(lb1, 0);
+    this->addChild(lb2, 0);
+    this->addChild(lb3, 0);
+    this->addChild(lb4, 0);
 
     token_label_ = Label::createWithSystemFont("My Label Text", "Arial", 16);
     token_label_->setString(std::to_string(player_token_));

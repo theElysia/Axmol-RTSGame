@@ -7,7 +7,7 @@
 #include "GameObject/GameObjectManager.h"
 
 class GameRole;
-// State Pattern & Singleton & CRTP
+
 class GameRoleState
 {
 public:
@@ -127,7 +127,7 @@ public:
         void handleCommand(GameRole* role, GameCommand* cmd) override; \
     };
 
-// DECLARE_GAME_ROLE_STATE(Idle)
+// DECLARE_GAME_ROLE_STATE(GameRoleStateIdle)
 DECLARE_GAME_ROLE_STATE(GameRoleStateMove)
 DECLARE_GAME_ROLE_STATE(GameRoleStateFight)
 DECLARE_GAME_ROLE_STATE(GameRoleStateDead)

@@ -92,9 +92,9 @@ void RTSCommandPool::processCommandGroupParallel(
     GameObjectManager* manager)
 {
     // 使用OpenMP并行处理
-#ifdef _OPENMP
-#    pragma omp parallel for schedule(dynamic, 32)
-#endif
+    // #ifdef _OPENMP
+    // #    pragma omp parallel for schedule(dynamic, 32)
+    // #endif
     for (size_t i = 0; i < commandGroup.size(); ++i)
     {
         auto& cmd = commandGroup[i];

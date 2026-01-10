@@ -14,7 +14,7 @@ bool GameWorld::init()
     this->addChild(map_sprite, 0, 0);
 
     game_resource_ = GameResourceHandler::getInstance();
-    game_resource_->init("Content/animations_config.csv", "Content/characters_stats.csv");
+    game_resource_->init("animations_config.csv", "characters_stats.csv");
     game_resource_->setTileSize(game_map_manager_->getTileSize());
 
     command_pool_ = new RTSCommandPool;

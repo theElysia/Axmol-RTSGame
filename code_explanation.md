@@ -58,7 +58,6 @@ public:
 
 ```cpp
 auto game_role = ax::utils::createInstance<GameRole>(&GameRole::init, args...);
-auto scene = utils::createInstance<MenuScene>();
 
 template <typename T, typename F, typename... Ts>
 inline T* createInstance(F&& finit, Ts&&... args)
@@ -73,12 +72,6 @@ inline T* createInstance(F&& finit, Ts&&... args)
     }
     return pRet;
 }
-
-template <typename T>
-inline T* createInstance()
-{
-    return ::ax::utils::createInstance<T>(&T::init);
-}
 ```
 
 ##### 建造者模式(Builder)
@@ -88,42 +81,30 @@ inline T* createInstance()
 
 当然不同层级通过GameObjectManager，再经由GameObjectFactory生成游戏对象也体现了建造者模式，只是没那么明显。
 
-##### 装饰模式(Decorator)
-
-这里主要是提一下`std::bind`方法，可以快速修饰一个函数（可选固定部分参数），通常用于传递类的成员函数（将其与this绑定），比用`lambda`方便并且明确。代码中通常使用宏来实现。
-
-```cpp
-std::bind(&func, fixed_arg, std::::placeholders::_1);
-
-AX_CALLBACK_2(GameScene::onKeyReleased, this);
-void GameScene::onKeyReleased(ax::EventKeyboard::KeyCode code, ax::Event* event);
-```
-
 ##### 单例模式(Singleton)
 
-很明显`导演(Director)`或者`GameResourceHandler`等是需要单例实现。导演的单例由引擎实现，自己写的单例参考`BaseTemplates.h`，使用了**CRTP**来提供接口（类比java中的implements）。
+很明显`导演(Director)`或者`GameResourceHandler`等是需要单例实现。导演的单例由引擎实现，自己写的单例参考`BaseTemplates.h`中的宏实现。
 
 ```cpp
-// CRTP Singleton
-template <typename T>
-class Singleton
-{
-protected:
-    Singleton()  = default;
-    ~Singleton() = default;
-
-    Singleton(const Singleton&)            = delete;
-    Singleton& operator=(const Singleton&) = delete;
-
-public:
-    static T& instance()
-    {
-        static T inst;
-        return inst;
+#define DECLARE_SINGLETON(ClassName)                  \
+private:                                              \
+    ClassName()                            = default; \
+    ~ClassName()                           = default; \
+    ClassName(const ClassName&)            = delete;  \
+    ClassName& operator=(const ClassName&) = delete;  \
+    ClassName(ClassName&&)                 = delete;  \
+    ClassName& operator=(ClassName&&)      = delete;  \
+                                                      \
+public:                                               \
+    static ClassName& instance()                      \
+    {                                                 \
+        static ClassName inst;                        \
+        return inst;                                  \
+    }                                                 \
+    static ClassName* getInstance()                   \
+    {                                                 \
+        return &instance();                           \
     }
-
-    static T* getInstance() { return &instance(); }
-};
 ```
 
 当然在开发过程中发现单例其实很容易滥用（这就相当于一个全局变量），其生命周期以及可见性会产生问题，所以还是尽量避免使用。
@@ -145,7 +126,7 @@ _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboard_listener_, thi
 
 ##### 策略模式(Strategy)
 
-设置一个统一的接口，当有需求时方便扩展与替换算法。比如寻路算法抽象基类接口设置如下：
+设置一个统一的接口，当有需求时方便扩展与替换算法。比如寻路算法抽象基类接口设置如下（实际上寻路应该用引擎自带的类似工具navmesh）：
 
 ```cpp
 class PathFinderStrategy
@@ -192,7 +173,6 @@ public:
 ```
 
 ```cpp
-// State Pattern & Singleton & CRTP
 class GameRoleState
 {
 public:
@@ -202,18 +182,11 @@ public:
 
     virtual void handleCommand(GameRole* role, GameCommand* cmd);
 };
-
-class GameRoleStateIdle : public GameRoleState, public Singleton<GameRoleStateIdle>
-{
-public:
-    void update(GameRole* role) override;
-    void handleCommand(GameRole* role, GameCommand* cmd) override;
-
-private:
-    friend class Singleton<GameRoleStateIdle>;
-    GameRoleStateIdle() = default;
-};
 ```
+
+##### 装饰模式(Decorator)
+
+动作`Action`中使用的`Sequence`与`Spawn`修饰符，可以将原本的基础动作修饰附带上其他动作，并保持接口不变。
 
 ##### 责任链模式(Chain of Responsibility)
 
@@ -271,37 +244,6 @@ ResultType GameMessageHandler::handle(GameMessage* msg)
 + 批处理模式，批量处理上一帧的命令，优化手段有并行和分组（提高缓存命中）。
 
 ```cpp
-class GameCommand
-{
-public:
-    // 与执行优先级一致
-    enum CommandType
-    {
-        UNDEF,
-
-        MOVE,
-        GET_ATTACK,
-
-        SELECT,
-        DESELECT,
-        SETTARGET,
-
-        TOTAL_NUM
-    };
-
-public:
-    GameCommand(int receiverId) : receiver_id_(receiverId) {}
-    virtual ~GameCommand() = default;
-
-    virtual CommandType getType() const = 0;
-    int getReceiverId() const { return receiver_id_; }
-
-private:
-    int receiver_id_ = 0;
-};
-```
-
-```cpp
 class RTSCommandPool
 {
 public:
@@ -350,5 +292,4 @@ void RTSCommandPool::addCommand(Args&&... args)
 anim_idle_   = RepeatForever::create(obj_template.anim_action_["idle"]->clone());
 anim_idle_->retain();
 anim_idle_->setTag(ActionTag::ANIMATION);
-
 ```

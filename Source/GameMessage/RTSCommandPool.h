@@ -3,11 +3,22 @@
 #include "omp.h"
 #include "GameMessage/GameCommand.h"
 #include <array>
-#include <memory_resource>
 #include <vector>
 #include <memory>
 #include <functional>
 #include <unordered_map>
+
+// 条件编译：检测平台是否支持 <memory_resource>
+#if defined(_WIN32) || (__cplusplus >= 201703L && __has_include(<memory_resource>))
+#    include <memory_resource>
+#    define USE_STD_PMR 1
+namespace command_pool_pmr = std::pmr;
+#else
+// Android等不支持std::pmr的平台使用自定义简单实现
+#    define USE_STD_PMR 0
+#    include "SimplePolymorphicAllocator.h"  // 需要创建这个头文件
+namespace command_pool_pmr = simple_pmr;
+#endif
 
 class GameObjectManager;
 
@@ -94,8 +105,16 @@ private:
     struct FrameBuffer
     {
         alignas(ALIGNMENT) std::array<uint8_t, MAX_COMMANDS_PER_FRAME * MAX_COMMAND_SIZE> memoryPool;
+
+#if USE_STD_PMR
+        // 使用标准库的pmr
         std::pmr::monotonic_buffer_resource memoryResource;
         std::pmr::polymorphic_allocator<GameCommand> allocator;
+#else
+        // 使用自定义的内存资源
+        simple_pmr::monotonic_buffer_resource memoryResource;
+        simple_pmr::polymorphic_allocator<GameCommand> allocator;
+#endif
 
         // 按命令类型分组存储
         std::array<std::vector<std::unique_ptr<GameCommand, std::function<void(GameCommand*)>>>,
@@ -123,7 +142,11 @@ private:
             totalCommands = 0;
         }
 
-        auto& getCommandGroup(GameCommand::CommandType type) { return commandGroups[static_cast<size_t>(type)]; }
+        std::vector<std::unique_ptr<GameCommand, std::function<void(GameCommand*)>>>& getCommandGroup(
+            GameCommand::CommandType type)
+        {
+            return commandGroups[static_cast<size_t>(type)];
+        }
 
         size_t getGroupCount(GameCommand::CommandType type) const
         {

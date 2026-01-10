@@ -9,18 +9,18 @@ bool GameResourceHandler::init(const std::string& animation_csv, const std::stri
     obj_templates_.clear();
     auto fileUtils      = FileUtils::getInstance();
     std::string csvPath = fileUtils->fullPathForFilename(characters_csv);
-    AXLOG(("try open " + csvPath).c_str());
+    // AXLOG(("try open " + csvPath).c_str());
     if (!readStats(csvPath))
         return false;
     csvPath = fileUtils->fullPathForFilename(animation_csv);
-    AXLOG(("try open " + csvPath).c_str());
+    // AXLOG(("try open " + csvPath).c_str());
     if (!readAnimation(csvPath))
         return false;
     AXLOG("finish init GameResourceHandler");
-    for (auto& it : obj_templates_)
-    {
-        AXLOG((std::string("init template ") + it.first).c_str());
-    }
+    // for (auto& it : obj_templates_)
+    // {
+    //     AXLOG((std::string("init template ") + it.first).c_str());
+    // }
     return true;
 }
 
@@ -29,12 +29,12 @@ bool GameResourceHandler::readStats(const std::string& filename)
     std::ifstream file(filename, std::ios::in);
     if (!file.is_open())
     {
-        AXLOGERROR(("Cannot open file: " + filename).c_str());
+        // AXLOGERROR(("Cannot open file: " + filename).c_str());
         return false;
     }
     else
     {
-        AXLOGD("Open file {}", filename);
+        // AXLOGD("Open file {}", filename);
     }
     std::string line, _word;
     std::vector<std::string> words;
@@ -86,12 +86,12 @@ bool GameResourceHandler::readAnimation(const std::string& filename)
     std::ifstream file(filename, std::ios::in);
     if (!file.is_open())
     {
-        AXLOGERROR(("Cannot open file: " + filename).c_str());
+        // AXLOGERROR(("Cannot open file: " + filename).c_str());
         return false;
     }
     else
     {
-        AXLOGD("Open file {}", filename);
+        // AXLOGD("Open file {}", filename);
     }
     std::string line, _word;
     std::vector<std::string> words;
@@ -109,7 +109,7 @@ bool GameResourceHandler::readAnimation(const std::string& filename)
         auto it = obj_templates_.find(words[0]);
         if (it == obj_templates_.end())
         {
-            AXLOG(("Unknown template name: " + words[0]).c_str());
+            // AXLOG(("Unknown template name: " + words[0]).c_str());
             continue;
         }
         auto& objT = obj_templates_[words[0]];
@@ -185,7 +185,7 @@ GameObjectTemplate& GameResourceHandler::getObjTemplate(const std::string& templ
     }
     else
     {
-        AXLOGERROR("GameResourceHandler unknown template name: {}", templateName);
+        // AXLOGERROR("GameResourceHandler unknown template name: {}", templateName);
         return obj_null_template_;
     }
 }

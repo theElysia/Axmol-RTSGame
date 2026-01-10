@@ -1,5 +1,4 @@
 #include "MenuScene.h"
-#include "Scenes/TestScene.h"
 #include "GameScene.h"
 
 using namespace ax;

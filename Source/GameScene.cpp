@@ -47,6 +47,7 @@ bool GameScene::init()
         case ui::Widget::TouchEventType::BEGAN:
             break;
         case ui::Widget::TouchEventType::ENDED:
+            this->cancelSelectGameObject();
             this->switchKeyCrtl();
             break;
         default:

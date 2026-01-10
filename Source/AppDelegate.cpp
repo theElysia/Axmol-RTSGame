@@ -24,7 +24,6 @@
  ****************************************************************************/
 
 #include "AppDelegate.h"
-#include "Scenes/MainScene.h"
 #include "MenuScene.h"
 
 #define USE_AUDIO_ENGINE 1
@@ -85,11 +84,11 @@ bool AppDelegate::applicationDidFinishLaunching()
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0f / 60);
 
-    FileUtils::getInstance()->addSearchPath("res");
-    FileUtils::getInstance()->addSearchPath("res/tilemaps");
-    FileUtils::getInstance()->addSearchPath("res/characters");
-    FileUtils::getInstance()->addSearchPath("res/UI-components");
-    FileUtils::getInstance()->addSearchPath("res/UI-components-back");
+    FileUtils::getInstance()->addSearchPath("fonts");
+    FileUtils::getInstance()->addSearchPath("tilemaps");
+    FileUtils::getInstance()->addSearchPath("characters");
+    FileUtils::getInstance()->addSearchPath("UI-components");
+    FileUtils::getInstance()->addSearchPath("UI-components-back");
 
     // Set the design resolution
     renderView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height,
